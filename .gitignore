@@ -1,0 +1,13 @@
+# Build outputs
+server
+client
+*.o
+
+# Runtime data
+chat.log
+
+# Editor and OS files
+.DS_Store
+.vscode/
+.idea/
+*~
