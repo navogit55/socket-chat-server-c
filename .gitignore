@@ -1,13 +1,16 @@
 # Build outputs
-server
-client
+build/
 *.o
 
 # Runtime data
 chat.log
+*.log
 
 # Editor and OS files
 .DS_Store
 .vscode/
 .idea/
 *~
+
+# Test artifacts
+tests/*.log

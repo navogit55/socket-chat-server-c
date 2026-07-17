@@ -7,14 +7,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#define PORT 8080
-#define MAX_CLIENTS 100
-#define BUFFER_SIZE 1024
-#define USERNAME_SIZE 50
+#include "chat.h"
+#include "util.h"
 
 #define RESET "\033[0m"
 
-static const char *colors[] = {
+static const char *COLORS[] = {
     "\033[1;31m",
     "\033[1;32m",
     "\033[1;33m",
@@ -23,8 +21,6 @@ static const char *colors[] = {
     "\033[1;36m",
     "\033[1;37m"
 };
-
-#define COLOR_COUNT 7
 
 typedef struct {
     int socket;
@@ -35,26 +31,6 @@ typedef struct {
 static Client clients[MAX_CLIENTS];
 static int client_count = 0;
 static pthread_mutex_t lock;
-
-static int send_all(int socket_fd, const char *message, size_t length) {
-    size_t total_sent = 0;
-
-    while (total_sent < length) {
-        ssize_t sent = send(socket_fd, message + total_sent, length - total_sent, 0);
-        if (sent < 0) {
-            if (errno == EINTR) {
-                continue;
-            }
-            return -1;
-        }
-        if (sent == 0) {
-            return -1;
-        }
-        total_sent += (size_t)sent;
-    }
-
-    return 0;
-}
 
 static void log_message(const char *message) {
     FILE *log = fopen("chat.log", "a");
@@ -96,7 +72,7 @@ static int add_client(int sock, const char *username) {
         clients[client_count].socket = sock;
         strncpy(clients[client_count].username, username, USERNAME_SIZE - 1);
         clients[client_count].username[USERNAME_SIZE - 1] = '\0';
-        clients[client_count].color = colors[client_count % COLOR_COUNT];
+        clients[client_count].color = COLORS[client_count % (sizeof(COLORS) / sizeof(COLORS[0]))];
         client_count++;
     }
     pthread_mutex_unlock(&lock);
@@ -276,10 +252,21 @@ static void *handle_client(void *arg) {
     return NULL;
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
     int server_fd;
     int opt = 1;
+    int port = PORT;
     struct sockaddr_in address;
+
+    if (argc >= 2) {
+        int p = atoi(argv[1]);
+        if (p > 0 && p <= 65535) {
+            port = p;
+        } else {
+            fprintf(stderr, "Usage: %s [port]\n", argv[0]);
+            return EXIT_FAILURE;
+        }
+    }
 
     signal(SIGPIPE, SIG_IGN);
 
@@ -302,7 +289,7 @@ int main(void) {
     memset(&address, 0, sizeof(address));
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
+    address.sin_port = htons((uint16_t)port);
 
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
         perror("bind");
@@ -318,7 +305,7 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    printf("Chat Server running on port %d\n", PORT);
+    printf("Chat Server running on port %d\n", port);
 
     while (1) {
         int new_socket = accept(server_fd, NULL, NULL);
