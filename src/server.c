@@ -70,8 +70,7 @@ static int add_client(int sock, const char *username) {
         result = -1;
     } else {
         clients[client_count].socket = sock;
-        strncpy(clients[client_count].username, username, USERNAME_SIZE - 1);
-        clients[client_count].username[USERNAME_SIZE - 1] = '\0';
+        snprintf(clients[client_count].username, USERNAME_SIZE, "%s", username);
         clients[client_count].color = COLORS[client_count % (sizeof(COLORS) / sizeof(COLORS[0]))];
         client_count++;
     }
@@ -87,8 +86,7 @@ static void remove_client(int sock) {
     pthread_mutex_lock(&lock);
     for (int i = 0; i < client_count; i++) {
         if (clients[i].socket == sock) {
-            strncpy(left_username, clients[i].username, USERNAME_SIZE - 1);
-            left_username[USERNAME_SIZE - 1] = '\0';
+            snprintf(left_username, USERNAME_SIZE, "%s", clients[i].username);
             close(clients[i].socket);
             clients[i] = clients[client_count - 1];
             client_count--;
