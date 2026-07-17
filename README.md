@@ -87,14 +87,14 @@ The project follows a classic **client-server** model over TCP:
                             |
                       TCP/IP Network
                             |
-+---------------------------+-------------------------------+
-|  Client (Alice)           |  Client (Bob)                 |
-|  +-----------------+      |  +-----------------+          |
-|  | stdin -> send() |      |  | stdin -> send() |          | 
-|  |recv() -> stdout |      |  |recv() -> stdout |          | 
-|  | recv_thread()   |      |  | recv_thread()   |          |
-|  +-----------------+      |  +-----------------+          |
-+---------------------------+-------------------------------+
++---------------------------+----------------------------+
+|  Client (Alice)           |  Client (Bob)              |
+|  +-----------------+      |  +-----------------+       |
+|  | stdin -> send() |      |  | stdin -> send() |       | 
+|  |recv() -> stdout |      |  |recv() -> stdout |       | 
+|  | recv_thread()   |      |  | recv_thread()   |       |
+|  +-----------------+      |  +-----------------+       |
++---------------------------+----------------------------+
 ```
 
 - **Server**: Listens on a TCP port, accepts connections, and spawns a detached thread per client. Each thread handles one client's read/write loop.
