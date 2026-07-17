@@ -14,4 +14,3 @@ chat.log
 
 # Test artifacts
 tests/*.log
-.github/workflows/build.yml
